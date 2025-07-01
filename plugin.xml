@@ -1,11 +1,23 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="com.brightminded.cordova.plugins.audiofocus" version="0.0.1" xmlns:android="http://schemas.android.com/apk/res/android" xmlns="http://apache.org/cordova/ns/plugins/1.0">
+<plugin id="com.maigre.cordova.plugins.audiofocus" version="0.0.1"
+        xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
     <name>AudioFocus</name>
-    <DESCRIPTION>Cordova plugin to request audio focus on Android</DESCRIPTION>
-    <js-module name="AudioFocus" src="www/AudioFocus.js"><clobbers target="window.audioFocus"/></js-module>
+    <description>Cordova plugin to request and listen for audio focus changes on Android</description>
+    <author email="thomas@37m.gr" href="https://github.com/Maigre">maigre</author>
+    <license>MIT</license>
+
+    <js-module name="AudioFocus" src="www/AudioFocus.js">
+        <clobbers target="cordova.plugins.audiofocus"/>
+    </js-module>
+
     <platform name="android">
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="AudioFocus"><param name="android-package" value="com.brightminded.cordova.plugins.AudioFocus"/></feature>
+            <feature name="AudioFocus">
+                <param name="android-package" value="com.maigre.cordova.plugins.AudioFocus"/>
+            </feature>
         </config-file>
-        <config-file parent="/*" target="AndroidManifest.xml"></config-file><source-file src="src/android/AudioFocus.java" target-dir="src/com/brightminded/cordova/plugins/AudioFocus"/></platform>
+        <source-file src="src/android/AudioFocus.java" target-dir="src/com/maigre/cordova/plugins/"/>
+    </platform>
 </plugin>
