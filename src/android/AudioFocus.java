@@ -67,7 +67,7 @@ public class AudioFocus extends CordovaPlugin {
         // request audio focus
         int result = am.requestAudioFocus(listener,
                                         AudioManager.STREAM_MUSIC,
-                                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
+                                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
 
         // return result
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
