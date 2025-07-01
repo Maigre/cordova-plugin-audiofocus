@@ -1,4 +1,4 @@
-package com.brightminded.cordova.plugins;
+package com.maigre.cordova.plugins;
 
 import android.content.Context;
 import android.media.AudioManager;
