@@ -1,7 +1,10 @@
 package com.maigre.cordova.plugins;
 
 import android.content.Context;
+import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
+import android.os.Build;
 
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
@@ -11,7 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 public class AudioFocus extends CordovaPlugin {
+
     private CallbackContext focusChangeCallbackContext;
+    private AudioFocusRequest focusRequest; // API 26+
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -30,46 +35,51 @@ public class AudioFocus extends CordovaPlugin {
         return false;
     }
 
-    private AudioManager.OnAudioFocusChangeListener listener = new AudioManager.OnAudioFocusChangeListener() {
+    private final AudioManager.OnAudioFocusChangeListener listener = new AudioManager.OnAudioFocusChangeListener() {
         @Override
         public void onAudioFocusChange(int focusChange) {
-            if (focusChangeCallbackContext != null) {
-                String focusState;
-                switch (focusChange) {
-                    case AudioManager.AUDIOFOCUS_GAIN:
-                        focusState = "AUDIOFOCUS_GAIN";
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS:
-                        focusState = "AUDIOFOCUS_LOSS";
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-                        focusState = "AUDIOFOCUS_LOSS_TRANSIENT";
-                        break;
-                    case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-                        focusState = "AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK";
-                        break;
-                    default:
-                        focusState = "AUDIOFOCUS_UNKNOWN";
-                }
-                PluginResult result = new PluginResult(PluginResult.Status.OK, focusState);
-                result.setKeepCallback(true);
-                focusChangeCallbackContext.sendPluginResult(result);
+            if (focusChangeCallbackContext == null) return;
+            String focusState;
+            switch (focusChange) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    focusState = "AUDIOFOCUS_GAIN";
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    focusState = "AUDIOFOCUS_LOSS";
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    focusState = "AUDIOFOCUS_LOSS_TRANSIENT";
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    focusState = "AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK";
+                    break;
+                default:
+                    focusState = "AUDIOFOCUS_UNKNOWN";
             }
+            PluginResult result = new PluginResult(PluginResult.Status.OK, focusState);
+            result.setKeepCallback(true);
+            focusChangeCallbackContext.sendPluginResult(result);
         }
     };
 
+    @SuppressWarnings("deprecation")
     private void requestFocus(CallbackContext callbackContext) {
-        // get AudioManager
-        AudioManager am = (AudioManager)this.cordova.getActivity()
-                                    .getApplicationContext()
-                                    .getSystemService(Context.AUDIO_SERVICE);
-
-        // request audio focus
-        int result = am.requestAudioFocus(listener,
-                                        AudioManager.STREAM_MUSIC,
-                                        AudioManager.AUDIOFOCUS_GAIN_TRANSIENT);
-
-        // return result
+        AudioManager am = (AudioManager) this.cordova.getActivity()
+                .getApplicationContext()
+                .getSystemService(Context.AUDIO_SERVICE);
+        int result;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                    .setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build())
+                    .setOnAudioFocusChangeListener(listener)
+                    .build();
+            result = am.requestAudioFocus(focusRequest);
+        } else {
+            result = am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+        }
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             callbackContext.success("");
         } else {
@@ -77,16 +87,17 @@ public class AudioFocus extends CordovaPlugin {
         }
     }
 
+    @SuppressWarnings("deprecation")
     private void cancelFocus(CallbackContext callbackContext) {
-
-         // get AudioManager
         AudioManager am = (AudioManager) this.cordova.getActivity()
-                                    .getApplicationContext()
-                                    .getSystemService(Context.AUDIO_SERVICE);
-
-        int result = am.abandonAudioFocus(listener);
-
-        // return result
+                .getApplicationContext()
+                .getSystemService(Context.AUDIO_SERVICE);
+        int result;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
+            result = am.abandonAudioFocusRequest(focusRequest);
+        } else {
+            result = am.abandonAudioFocus(listener);
+        }
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             callbackContext.success("");
         } else {
@@ -96,7 +107,6 @@ public class AudioFocus extends CordovaPlugin {
 
     private void onFocusChange(CallbackContext callbackContext) {
         this.focusChangeCallbackContext = callbackContext;
-        // Keep callback alive for future events
         PluginResult result = new PluginResult(PluginResult.Status.NO_RESULT);
         result.setKeepCallback(true);
         callbackContext.sendPluginResult(result);

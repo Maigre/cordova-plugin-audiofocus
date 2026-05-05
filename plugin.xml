@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="com.maigre.cordova.plugins.audiofocus" version="0.0.1"
+<plugin id="com.maigre.cordova.plugins.audiofocus" version="1.2.0"
         xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
     <name>AudioFocus</name>
-    <description>Cordova plugin to request and listen for audio focus changes on Android</description>
+    <description>Cordova plugin to request audio focus and listen for focus changes on Android and iOS</description>
     <author email="thomas@37m.gr" href="https://github.com/Maigre">maigre</author>
     <license>MIT</license>
 
@@ -20,4 +20,15 @@
         </config-file>
         <source-file src="src/android/AudioFocus.java" target-dir="src/com/maigre/cordova/plugins/"/>
     </platform>
+
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="AudioFocus">
+                <param name="ios-package" value="AudioFocusPlugin"/>
+            </feature>
+        </config-file>
+        <source-file src="src/ios/AudioFocus.m" target-dir="src/AudioFocus/"/>
+        <framework src="AVFoundation.framework"/>
+    </platform>
+
 </plugin>
