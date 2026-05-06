@@ -63,22 +63,26 @@
     AVAudioSessionInterruptionType type =
         (AVAudioSessionInterruptionType)[info[AVAudioSessionInterruptionTypeKey] unsignedIntegerValue];
 
-    NSString* focusState;
     if (type == AVAudioSessionInterruptionTypeBegan) {
-        focusState = @"AUDIOFOCUS_LOSS";
+        CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                   messageAsString:@"AUDIOFOCUS_LOSS"];
+        result.keepCallback = @YES;
+        [self.commandDelegate sendPluginResult:result callbackId:self.focusChangeCallbackId];
     } else {
         // Interruption ended — reactivate the audio session so Howler can resume
         NSUInteger options = [info[AVAudioSessionInterruptionOptionKey] unsignedIntegerValue];
         if (options & AVAudioSessionInterruptionOptionShouldResume) {
             NSError* error = nil;
             [[AVAudioSession sharedInstance] setActive:YES error:&error];
-        }
-        focusState = @"AUDIOFOCUS_GAIN";
-    }
 
-    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:focusState];
-    result.keepCallback = @YES;
-    [self.commandDelegate sendPluginResult:result callbackId:self.focusChangeCallbackId];
+            if (error == nil) {
+                CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK
+                                                           messageAsString:@"AUDIOFOCUS_GAIN"];
+                result.keepCallback = @YES;
+                [self.commandDelegate sendPluginResult:result callbackId:self.focusChangeCallbackId];
+            }
+        }
+    }
 }
 
 - (void)dealloc {
