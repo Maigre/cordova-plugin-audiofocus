@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-audiofocus",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "Cordova Audio Focus Plugin — Android (AudioFocusRequest API) and iOS (AVAudioSession interruptions)",
   "repository": {
     "type": "git",
