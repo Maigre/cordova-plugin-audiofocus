@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<plugin id="com.maigre.cordova.plugins.audiofocus" version="1.2.0"
+<plugin id="com.maigre.cordova.plugins.audiofocus" version="1.3.0"
         xmlns="http://apache.org/cordova/ns/plugins/1.0"
         xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -18,7 +18,18 @@
                 <param name="android-package" value="com.maigre.cordova.plugins.AudioFocus"/>
             </feature>
         </config-file>
+        <config-file parent="/manifest" target="AndroidManifest.xml">
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+            <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+        </config-file>
+        <config-file parent="/manifest/application" target="AndroidManifest.xml">
+            <service
+                android:name="com.maigre.cordova.plugins.AudioFocusService"
+                android:foregroundServiceType="mediaPlayback"
+                android:exported="false" />
+        </config-file>
         <source-file src="src/android/AudioFocus.java" target-dir="src/com/maigre/cordova/plugins/"/>
+        <source-file src="src/android/AudioFocusService.java" target-dir="src/com/maigre/cordova/plugins/"/>
     </platform>
 
     <platform name="ios">

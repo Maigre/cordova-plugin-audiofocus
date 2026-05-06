@@ -1,6 +1,7 @@
 package com.maigre.cordova.plugins;
 
 import android.content.Context;
+import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.AudioFocusRequest;
 import android.media.AudioManager;
@@ -81,6 +82,7 @@ public class AudioFocus extends CordovaPlugin {
             result = am.requestAudioFocus(listener, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
         }
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            startAudioFocusService();
             callbackContext.success("");
         } else {
             callbackContext.error("");
@@ -98,11 +100,27 @@ public class AudioFocus extends CordovaPlugin {
         } else {
             result = am.abandonAudioFocus(listener);
         }
+        stopAudioFocusService();
         if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
             callbackContext.success("");
         } else {
             callbackContext.error("");
         }
+    }
+
+    private void startAudioFocusService() {
+        Context ctx = this.cordova.getActivity().getApplicationContext();
+        Intent intent = new Intent(ctx, AudioFocusService.class);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ctx.startForegroundService(intent);
+        } else {
+            ctx.startService(intent);
+        }
+    }
+
+    private void stopAudioFocusService() {
+        Context ctx = this.cordova.getActivity().getApplicationContext();
+        ctx.stopService(new Intent(ctx, AudioFocusService.class));
     }
 
     private void onFocusChange(CallbackContext callbackContext) {
